@@ -27,7 +27,8 @@ if ! aider --model "openai/${OMNIROUTE_MODEL}" --yes-always --no-auto-commits \
   exit 1
 fi
 
-DIFF="$(git diff)"
+git add -A
+DIFF="$(git diff --cached -- "${FILES[@]}")"
 if [ -z "$DIFF" ]; then
   echo "ERROR: aider produced no changes" >&2
   exit 1

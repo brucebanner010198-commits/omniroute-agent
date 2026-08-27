@@ -59,11 +59,11 @@ for one ("use a real sub-agent", "skip OmniRoute"), see Escape hatch below.
 
 7. **Accept the result.**
    - Text: use the response directly, same as a sub-agent's report.
-   - Code: `bridge-code.sh` runs Aider with `--no-auto-commits`, so the diff
-     is uncommitted in the worktree. Commit it there first, then merge the
+   - Code: `bridge-code.sh` runs Aider with `--no-auto-commits` and stages
+     the result (`git add -A`) before printing the diff, but it is still
+     uncommitted in the worktree. Commit it there first, then merge the
      branch into the real working tree, then clean up:
      ```bash
-     git -C "$WORKTREE_PATH" add -A
      git -C "$WORKTREE_PATH" commit -m "omniroute: <short summary of the task>"
      git merge --no-ff "omniroute/${TASK_ID}"
      git worktree remove "$WORKTREE_PATH"
