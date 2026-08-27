@@ -1,0 +1,5 @@
+# Design docs, specs, and implementation plans are working documents,
+# not versioned code. Keep them local, out of git history.
+docs/
+*.plan.md
+.impeccable/
