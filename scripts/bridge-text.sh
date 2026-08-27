@@ -34,6 +34,7 @@ if "error" in d:
     msg = err.get("message", err) if isinstance(err, dict) else err
     print("ERROR: OmniRoute returned an error: " + str(msg), file=sys.stderr)
     sys.exit(1)
+print("RESOLVED_MODEL: " + d.get("model", "unknown"), file=sys.stderr)
 print(d["choices"][0]["message"]["content"])
 ')"
 

@@ -39,7 +39,7 @@ export OPENAI_API_BASE="$OMNIROUTE_BASE"
 export OPENAI_API_KEY="${OMNIROUTE_API_KEY:-omniroute-local}"
 
 AIDER_TIMEOUT_SEC=360
-aider --model "openai/${OMNIROUTE_MODEL}" --yes-always --no-auto-commits \
+aider --model "openai/${OMNIROUTE_MODEL}" --yes-always --no-auto-commits --verbose --no-show-model-warnings \
     --message "$(cat "$PROMPT_FILE")" "${FILES[@]}" >"${WORKTREE_DIR}/.aider-output.log" 2>&1 &
 AIDER_PID=$!
 ( sleep "$AIDER_TIMEOUT_SEC"; kill -TERM "$AIDER_PID" 2>/dev/null ) &
