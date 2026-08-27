@@ -13,10 +13,18 @@ fi
 
 PROMPT_JSON="$(python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' < "$PROMPT_FILE")"
 
-RESPONSE="$(curl -sf -m 60 "${OMNIROUTE_BASE}/chat/completions" \
+RESPONSE_FILE="$(mktemp -t omniroute-bridge-text-response-XXXXXX)"
+trap 'rm -f "$RESPONSE_FILE"' EXIT
+HTTP_STATUS=$(curl -s -m 360 -o "$RESPONSE_FILE" -w "%{http_code}" "${OMNIROUTE_BASE}/chat/completions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${OMNIROUTE_API_KEY:-omniroute-local}" \
-  -d "{\"model\":\"${OMNIROUTE_MODEL}\",\"stream\":false,\"messages\":[{\"role\":\"user\",\"content\":${PROMPT_JSON}}]}")"
+  -d "{\"model\":\"${OMNIROUTE_MODEL}\",\"stream\":false,\"messages\":[{\"role\":\"user\",\"content\":${PROMPT_JSON}}]}") || true
+RESPONSE="$(cat "$RESPONSE_FILE" 2>/dev/null || true)"
+
+if [ "$HTTP_STATUS" != "200" ] && [ -z "$RESPONSE" ]; then
+  echo "ERROR: OmniRoute request failed with HTTP ${HTTP_STATUS} and no response body" >&2
+  exit 1
+fi
 
 TEXT="$(echo "$RESPONSE" | python3 -c '
 import json, sys

@@ -50,12 +50,13 @@ for one ("use a real sub-agent", "skip OmniRoute"), see Escape hatch below.
 
 6. **Fallback: write the exhausted marker.**
    ```bash
-   mkdir -p .claude
-   touch ".claude/.omniroute-exhausted-${TASK_ID}"
+   touch ~/.claude/.omniroute-exhausted-${TASK_ID}
    ```
-   Then make the real `Agent` call for this task as you normally would. The
-   `PreToolUse` hook will see the marker, allow the call, and delete the
-   marker.
+   The marker lives in a fixed location (`~/.claude/`, not the current repo)
+   so the gate hook finds it regardless of which repo's working directory
+   the `Agent` call runs from. Then make the real `Agent` call for this task
+   as you normally would. The `PreToolUse` hook will see the marker, allow
+   the call, and delete the marker.
 
 7. **Accept the result.**
    - Text: use the response directly, same as a sub-agent's report.
@@ -77,3 +78,16 @@ for one ("use a real sub-agent", "skip OmniRoute"), see Escape hatch below.
 If the user explicitly asks to skip OmniRoute for this task, write the
 exhausted marker directly (step 6) without attempting the bridge scripts,
 then make the real `Agent` call.
+
+## Inside a Workflow script
+
+The `PreToolUse` gate hook on the `Agent` tool does not see `agent()` calls
+made from inside a `Workflow` script; that spawn path bypasses it entirely
+(confirmed empirically: a workflow ran an `agent()` call to completion with
+no exhausted marker present and no block). Hook enforcement cannot reach
+workflow-internal work, so route it a different way: pass
+`{agentType: 'omniroute-worker'}` on every `agent()` call in a workflow
+script that does implementation, research, or review work. That custom
+agent type (`~/.claude/agents/omniroute-worker.md`) runs the OmniRoute-first
+flow itself before falling back to its own model, so the routing happens
+inside the spawned agent rather than at the gate.
