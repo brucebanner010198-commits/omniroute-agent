@@ -21,7 +21,9 @@ for one ("use a real sub-agent", "skip OmniRoute"), see Escape hatch below.
    - Research, review, or any other text-shaped task → text path.
 
 3. **Code path:**
-   - Write the task prompt to a temp file.
+   - Write the task prompt to a temp file using `mktemp -t "omniroute-prompt-${TASK_ID}-XXXXXX"` (never a
+     fixed or predictable filename: multiple omniroute-agent tasks can run concurrently, e.g. from parallel
+     Workflow sub-agents, and a shared filename means one task's prompt gets silently overwritten by another's).
    - Run `~/.claude/skills/omniroute-agent/scripts/bridge-code.sh "$TASK_ID" <repo-path> <prompt-file> <files...>`.
    - If it exits non-zero: this is attempt failure #1 (or #2). Go to step 5.
    - If it succeeds: read the printed `WORKTREE_PATH` and diff.
@@ -33,7 +35,8 @@ for one ("use a real sub-agent", "skip OmniRoute"), see Escape hatch below.
      prompt (a broad codebase survey, "find every caller of X" across a large
      repo), this task is out of scope for OmniRoute: skip straight to writing
      the exhausted marker (step 6) and use a real `Agent` call.
-   - Write the prompt (with inlined context) to a temp file.
+   - Write the prompt (with inlined context) to a temp file using
+     `mktemp -t "omniroute-prompt-${TASK_ID}-XXXXXX"` (same collision reason as the code path above).
    - Run `~/.claude/skills/omniroute-agent/scripts/bridge-text.sh <prompt-file>`.
    - If it exits non-zero: this is attempt failure #1 (or #2). Go to step 5.
 
