@@ -59,14 +59,18 @@ for one ("use a real sub-agent", "skip OmniRoute"), see Escape hatch below.
 
 7. **Accept the result.**
    - Text: use the response directly, same as a sub-agent's report.
-   - Code: merge the worktree branch into the real working tree, then clean
-     up:
+   - Code: `bridge-code.sh` runs Aider with `--no-auto-commits`, so the diff
+     is uncommitted in the worktree. Commit it there first, then merge the
+     branch into the real working tree, then clean up:
      ```bash
+     git -C "$WORKTREE_PATH" add -A
+     git -C "$WORKTREE_PATH" commit -m "omniroute: <short summary of the task>"
      git merge --no-ff "omniroute/${TASK_ID}"
      git worktree remove "$WORKTREE_PATH"
      git branch -d "omniroute/${TASK_ID}"
      ```
-     The user's working tree is only touched at this step, never before.
+     The user's working tree is only touched at the `git merge` step, never
+     before.
 
 ## Escape hatch
 
